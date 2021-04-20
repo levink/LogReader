@@ -2,7 +2,8 @@
 
 This is small regex engine, written on C++ and used in Android application. It is test task from one of my employer, which i had successfully done.
 
-Program download ANSI-text file by URL address, parse it with regular expression, count and print matched lines. 
+Program download ANSI-text file by URL address, parse it with regular expression, count and print matched lines.<br>
+Also it remembers search history, allow to select and copy to clipboard matched lines
 
 #### Regex
 

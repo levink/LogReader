@@ -1,0 +1,20 @@
+<resources>
+    <string name="app_name">Logger</string>
+    <string name="set_url">Select or input URL</string>
+    <string name="set_mask">Select or input mask</string>
+    <string name="search">Search</string>
+    <string name="clear_history">Clear history</string>
+    <string name="close_app">Close app</string>
+    <string name="parse">Parse file</string>
+    <string name="not_found">Not found</string>
+    <string name="is_empty_mask">Mask is empty</string>
+    <string name="url_not_available">URL not available</string>
+    <string name="url_history_is_empty">Files history is empty</string>
+    <string name="mask_history_is_empty">Masks history is empty</string>
+    <string name="copy">Copy</string>
+    <string name="select_all">Select all</string>
+    <string name="from_the_begin">From the begin</string>
+    <string name="nothing_to_copy">Nothing to copy</string>
+    <string name="copy_failed">Copy failed</string>
+    <string name="copy_success">Copied</string>
+</resources>

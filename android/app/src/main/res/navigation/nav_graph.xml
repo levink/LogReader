@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    app:startDestination="@id/urlFragment">
+
+    <fragment
+        android:id="@+id/urlFragment"
+        android:name="com.logger.fragment.UrlFragment"
+        android:label="fragment_url"
+        tools:layout="@layout/fragment_url" >
+        <action
+            android:id="@+id/action_urlFragment_to_maskFragment"
+            app:destination="@id/maskFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/maskFragment"
+        android:name="com.logger.fragment.MaskFragment"
+        android:label="fragment_mask"
+        tools:layout="@layout/fragment_mask" >
+        <action
+            android:id="@+id/action_maskFragment_to_resultFragment"
+            app:destination="@id/resultFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/resultFragment"
+        android:name="com.logger.fragment.ResultFragment"
+        android:label="fragment_result"
+        tools:layout="@layout/fragment_result" />
+</navigation>
