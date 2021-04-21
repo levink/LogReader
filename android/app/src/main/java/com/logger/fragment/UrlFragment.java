@@ -17,7 +17,7 @@ import androidx.appcompat.widget.Toolbar;
 
 import com.logger.AppViewModel;
 import com.logger.R;
-import com.logger.classes.SearchListener;
+import com.logger.classes.input.SearchViewListener;
 
 import java.util.Objects;
 
@@ -61,7 +61,7 @@ public class UrlFragment extends BaseFragment {
     }
     private void setSearchView(@NonNull View view) {
         SearchView searchView = view.findViewById(R.id.searchView);
-        SearchListener searchListener = new SearchListener(newText -> {
+        SearchViewListener searchListener = new SearchViewListener(newText -> {
             viewModel.setUrl(newText);
         }, searchView);
         getLifecycle().addObserver(searchListener);
@@ -93,5 +93,4 @@ public class UrlFragment extends BaseFragment {
             }
         });
     }
-
 }

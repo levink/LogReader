@@ -1,4 +1,4 @@
-package com.logger.classes;
+package com.logger.classes.input;
 
 import android.text.InputFilter;
 import android.text.Spanned;

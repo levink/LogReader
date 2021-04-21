@@ -1,12 +1,13 @@
-package com.logger.classes;
+package com.logger.classes.input;
 
 import androidx.appcompat.widget.SearchView;
 import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.LifecycleObserver;
 import androidx.lifecycle.OnLifecycleEvent;
 
-public class SearchListener implements SearchView.OnQueryTextListener, LifecycleObserver {
+public class SearchViewListener implements SearchView.OnQueryTextListener, LifecycleObserver {
 
+    @FunctionalInterface
     public interface OnChangeCallback {
         void onChange(String newText);
     }
@@ -14,7 +15,7 @@ public class SearchListener implements SearchView.OnQueryTextListener, Lifecycle
     private final SearchView view;
     private final OnChangeCallback callback;
 
-    public SearchListener(OnChangeCallback callback, SearchView view) {
+    public SearchViewListener(OnChangeCallback callback, SearchView view) {
         this.callback = callback;
         this.view = view;
     }

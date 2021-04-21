@@ -1,4 +1,4 @@
-package com.logger.classes;
+package com.logger.classes.logs;
 
 public class LogReader {
     static {

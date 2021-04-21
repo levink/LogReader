@@ -2,8 +2,8 @@
 package com.logger.task;
 
 import com.logger.App;
-import com.logger.classes.LogReader;
-import com.logger.classes.LogWriter;
+import com.logger.classes.logs.LogReader;
+import com.logger.classes.logs.LogWriter;
 
 import java.io.IOException;
 import java.io.InputStream;

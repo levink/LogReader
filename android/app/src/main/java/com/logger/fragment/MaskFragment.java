@@ -1,9 +1,7 @@
 package com.logger.fragment;
 
 import android.os.Bundle;
-import android.text.Editable;
 import android.text.InputFilter;
-import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -22,7 +20,8 @@ import androidx.appcompat.widget.Toolbar;
 
 import com.logger.AppViewModel;
 import com.logger.R;
-import com.logger.classes.OneLineFilter;
+import com.logger.classes.input.EditTextListener;
+import com.logger.classes.input.OneLineFilter;
 
 import java.util.Objects;
 
@@ -85,7 +84,6 @@ public class MaskFragment extends BaseFragment {
         setToolbar(view);
         setSearchView(view);
         setListView(view);
-
         if (savedInstanceState == null) {
             String url = getUrl(getArguments());
             if (url == null) {
@@ -108,16 +106,10 @@ public class MaskFragment extends BaseFragment {
     private void setSearchView(@NonNull View view) {
         EditText editText = view.findViewById(R.id.editText);
         editText.setFilters(new InputFilter[] { new OneLineFilter() });
-        editText.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) { }
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) { }
-            @Override
-            public void afterTextChanged(Editable s) {
-                viewModel.setMask(s.toString());
-            }
-        });
+        EditTextListener listener = new EditTextListener(newText -> {
+            viewModel.setMask(newText);
+        }, editText);
+        getLifecycle().addObserver(listener);
         viewModel.getMask().observe(getViewLifecycleOwner(), mask -> {
             boolean different = !Objects.equals(mask, editText.getText().toString());
             if (different) {
@@ -157,4 +149,5 @@ public class MaskFragment extends BaseFragment {
         }
         ParseFragment.open(this, url, mask);
     }
+
 }

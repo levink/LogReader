@@ -1,12 +1,9 @@
 package com.logger;
 
 import android.app.Application;
-import android.os.Handler;
-import android.os.Looper;
 
-import com.logger.classes.LogWriter;
+import com.logger.classes.logs.LogWriter;
 import com.logger.db.DBHelper;
-import com.logger.db.DBRepo;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;

@@ -18,10 +18,9 @@
             android:id="@+id/editText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            app:searchIcon="@null"
             android:hint="@string/set_mask"
-            android:backgroundTint="@color/colorPrimary">
-
-        </EditText>
+            android:backgroundTint="@color/colorPrimary" />
 
     </androidx.appcompat.widget.Toolbar>
 

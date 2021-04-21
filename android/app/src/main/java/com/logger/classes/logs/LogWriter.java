@@ -1,9 +1,6 @@
-package com.logger.classes;
+package com.logger.classes.logs;
 
 import android.content.Context;
-import android.util.Log;
-
-import com.logger.classes.LogReader;
 
 import java.io.BufferedWriter;
 import java.io.File;
