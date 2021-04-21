@@ -10,6 +10,7 @@ import androidx.annotation.IdRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.StringRes;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
 
 import com.logger.R;
@@ -17,8 +18,7 @@ import com.logger.db.DBHelper;
 import com.logger.fragment.IParent;
 
 public abstract class BaseFragment extends Fragment {
-    private boolean started;
-    protected IParent parent;
+    private IParent parent;
 
     @Override
     public void onAttach(@NonNull Context context) {
@@ -32,18 +32,6 @@ public abstract class BaseFragment extends Fragment {
         parent = null;
     }
 
-    @Override
-    public void onStart() {
-        super.onStart();
-        started = true;
-    }
-
-    @Override
-    public void onStop() {
-        super.onStop();
-        started = false;
-    }
-
     protected void show(@IdRes int id) {
         Activity activity = requireActivity();
         View view = activity.findViewById(id);
@@ -51,6 +39,7 @@ public abstract class BaseFragment extends Fragment {
             view.setVisibility(View.VISIBLE);
         }
     }
+
     protected void hide(@IdRes int id) {
         View view = requireActivity().findViewById(id);
         if (view != null) {
@@ -68,6 +57,7 @@ public abstract class BaseFragment extends Fragment {
             controller.navigate(resId, bundle);
         }
     }
+
     public void navigateUp() {
         if (parent == null) {
             return;
@@ -77,6 +67,7 @@ public abstract class BaseFragment extends Fragment {
             controller.navigateUp();
         }
     }
+
     public void navigateRoot() {
         if (parent == null) {
             return;
@@ -88,8 +79,8 @@ public abstract class BaseFragment extends Fragment {
     }
 
     public void toast(@StringRes int textId) {
-        if (started) {
-            Toast.makeText(requireActivity(), textId, Toast.LENGTH_SHORT).show();
-        }
+        Activity activity = requireActivity();
+        Toast toast = Toast.makeText(activity, textId, Toast.LENGTH_SHORT);
+        toast.show();
     }
 }

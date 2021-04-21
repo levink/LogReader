@@ -6,6 +6,8 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
+import androidx.annotation.NonNull;
+
 import org.apache.commons.io.IOUtils;
 
 import java.io.IOException;
@@ -19,7 +21,6 @@ public class DBHelper extends SQLiteOpenHelper {
         final static String FILES = "Files";
         final static String MASK = "Mask";
     }
-
 
     public DBHelper(Context context) {
         super(context, DB_NAME, null, 1 );
@@ -36,6 +37,9 @@ public class DBHelper extends SQLiteOpenHelper {
         insertMask(db,"*/n");
         insertMask(db,"*/r/n");
         insertMask(db,"*");
+
+        insertURL(db, "https://snowrider.pro:1306/test_20mb.txt");
+        insertURL(db, "https://snowrider.pro:1306/Hello.html");
     }
 
     private void createTables(SQLiteDatabase db) {
@@ -66,37 +70,53 @@ public class DBHelper extends SQLiteOpenHelper {
         /* Nothing to do here */
     }
 
-    public ArrayList<String> getMasks() {
+    public ArrayList<String> getUrlHistory() {
+        String sql =
+                "select url " +
+                "from " + Table.FILES + " " +
+                "order by [date] desc";
         ArrayList<String> result = new ArrayList<>();
-        SQLiteDatabase db = getReadableDatabase();
-        Cursor c = null;
-        try {
-            final String sql = "select mask, [date] from Mask order by [date] desc";
-            c = db.rawQuery(sql, null);
-
-            if (c.moveToFirst()) {
-                result.add(c.getString(0));
-                c.moveToNext();
-                while (!c.isAfterLast()) {
-                    result.add(c.getString(0));
-                    c.moveToNext();
-                }
+        try (Cursor cursor = getReadableDatabase().rawQuery(sql, null)) {
+            if (cursor.moveToFirst()) {
+                do {
+                    String item = cursor.getString(0);
+                    result.add(item);
+                } while (cursor.moveToNext());
             }
-        } finally {
-            if (c != null) {
-                c.close();
-            }
-            db.close();
         }
         return result;
     }
 
-    public void save(String url, String mask) {
-        SQLiteDatabase db = getWritableDatabase();
-        insertURL(db, url);
-        insertMask(db, mask);
+    public ArrayList<String> getMaskHistory() {
+        String sql =
+                "select mask " +
+                "from " + Table.MASK + " " +
+                "order by [date] desc";
+        ArrayList<String> result = new ArrayList<>();
+        try (Cursor cursor = getReadableDatabase().rawQuery(sql, null)) {
+            if (cursor.moveToFirst()) {
+                do {
+                    String item = cursor.getString(0);
+                    result.add(item);
+                } while (cursor.moveToNext());
+            }
+        }
+        return result;
     }
-    private void insertURL(SQLiteDatabase db, String url){
+
+    public void saveMask(String mask) {
+        if (mask != null) {
+            SQLiteDatabase db = getWritableDatabase();
+            insertMask(db, mask);
+        }
+    }
+    public void saveUrl(String url) {
+        if (url != null) {
+            SQLiteDatabase db = getWritableDatabase();
+            insertURL(db, url);
+        }
+    }
+    private void insertURL(SQLiteDatabase db, String url) {
         ContentValues cv = new ContentValues();
         cv.put("url", url);
         cv.put("[date]", System.currentTimeMillis());
@@ -116,5 +136,6 @@ public class DBHelper extends SQLiteOpenHelper {
         } finally {
             db.close();
         }
+
     }
 }

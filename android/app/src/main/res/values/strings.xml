@@ -7,9 +7,10 @@
     <string name="close_app">Close app</string>
     <string name="parse">Parse file</string>
     <string name="not_found">Not found</string>
+    <string name="is_empty_url">URL is empty</string>
     <string name="is_empty_mask">Mask is empty</string>
     <string name="url_not_available">URL not available</string>
-    <string name="url_history_is_empty">Files history is empty</string>
+    <string name="url_history_is_empty">URL history is empty</string>
     <string name="mask_history_is_empty">Masks history is empty</string>
     <string name="copy">Copy</string>
     <string name="select_all">Select all</string>

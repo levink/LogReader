@@ -1,9 +1,5 @@
 package com.logger.fragment;
 
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -18,23 +14,16 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
-import androidx.lifecycle.Lifecycle;
-import androidx.lifecycle.LifecycleObserver;
-import androidx.lifecycle.OnLifecycleEvent;
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
-import com.logger.AppService;
+import com.logger.AppViewModel;
 import com.logger.R;
+import com.logger.classes.SearchListener;
+
+import java.util.Objects;
 
 public class UrlFragment extends BaseFragment {
 
-    private SearchView searchView;
-    private ArrayAdapter<String> adapter;
-
-    @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-    }
+    private AppViewModel viewModel;
 
     @Nullable
     @Override
@@ -43,38 +32,11 @@ public class UrlFragment extends BaseFragment {
     }
 
     @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-        setToolbar(view);
-        setListView(view);
-    }
-    private void setToolbar(@NonNull View view) {
-        Toolbar toolbar = view.findViewById(R.id.toolBar);
-        AppCompatActivity activity = (AppCompatActivity)requireActivity();
-        activity.setSupportActionBar(toolbar);
-        setHasOptionsMenu(true);
-        searchView = view.findViewById(R.id.searchView);
-    }
-    private void setListView(@NonNull View view) {
-        String[] files = new String[] {
-            "https://snowrider.pro:1306/Hello.html",
-            "https://snowrider.pro:1306/test_20mb.txt"
-        };
-        adapter = new ArrayAdapter<>(requireContext(), R.layout.item_list, files);
-        ListView list = view.findViewById(R.id.listView);
-        list.setAdapter(adapter);
-        list.setOnItemClickListener((adapterView, view1, i, l) -> {
-            String url = adapter.getItem(i);
-            openMaskFragment(url);
-        });
-    }
-
-    @Override
     public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
         inflater.inflate(R.menu.url_menu, menu);
         menu.findItem(R.id.search).setOnMenuItemClickListener(menuItem -> {
-            String url = searchView.getQuery().toString();
-            openMaskFragment(url);
+            String url = viewModel.getUrl().getValue();
+            MaskFragment.open(this, url);
             return true;
         });
         menu.findItem(R.id.close_app).setOnMenuItemClickListener(menuItem -> {
@@ -83,47 +45,53 @@ public class UrlFragment extends BaseFragment {
         });
     }
 
-    private void openMaskFragment(String url) {
-
-        MaskFragment.open(this, url);
-//
-//        getLifecycle().addObserver(new UrlCheckReceiver(AppService.URL_CHECK_BROADCAST, this));
-//        Context context = requireContext();
-//        AppService.checkUrl(context, url);
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        viewModel = AppViewModel.getInstance(requireActivity());
+        setToolbar(view);
+        setSearchView(view);
+        setListView(view);
     }
-
-    private static class UrlCheckReceiver extends BroadcastReceiver implements LifecycleObserver {
-        private final BaseFragment fragment;
-        private final LocalBroadcastManager broadcastManager;
-        private final IntentFilter filter;
-
-        public UrlCheckReceiver(String action, BaseFragment fragment) {
-            this.fragment = fragment;
-            broadcastManager = LocalBroadcastManager.getInstance(fragment.requireContext());
-            filter = new IntentFilter(action);
-        }
-
-        @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
-        @SuppressWarnings("unused")
-        public void subscribe() {
-            broadcastManager.registerReceiver(this, filter);
-        }
-
-        @OnLifecycleEvent(Lifecycle.Event.ON_PAUSE)
-        @SuppressWarnings("unused")
-        public void unsubscribe() {
-            broadcastManager.unregisterReceiver(this);
-        }
-
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            boolean canDownload = intent.getBooleanExtra(AppService.Tag.IS_AVAILABLE, false);
-            if (canDownload) {
-                String url = intent.getStringExtra(AppService.Tag.URL);
-                MaskFragment.open(fragment, url);
-            } else {
-                fragment.toast(R.string.url_not_available);
+    private void setToolbar(@NonNull View view) {
+        Toolbar toolbar = view.findViewById(R.id.toolBar);
+        AppCompatActivity activity = (AppCompatActivity)requireActivity();
+        activity.setSupportActionBar(toolbar);
+        setHasOptionsMenu(true);
+    }
+    private void setSearchView(@NonNull View view) {
+        SearchView searchView = view.findViewById(R.id.searchView);
+        SearchListener searchListener = new SearchListener(newText -> {
+            viewModel.setUrl(newText);
+        }, searchView);
+        getLifecycle().addObserver(searchListener);
+        viewModel.getUrl().observe(getViewLifecycleOwner(), url -> {
+            String url_old = searchView.getQuery().toString();
+            boolean different = !Objects.equals(url, url_old);
+            if (different) {
+                searchView.setQuery(url, false);
             }
-        }
+        });
     }
+    private void setListView(@NonNull View view) {
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(requireContext(), R.layout.item_list);
+        ListView list = view.findViewById(R.id.listView);
+        list.setAdapter(adapter);
+        list.setOnItemClickListener((adapterView, v, i, l) -> {
+            String url = (String)adapterView.getItemAtPosition(i);
+            MaskFragment.open(this, url);
+        });
+        viewModel.getUrlHistory().observe(getViewLifecycleOwner(), items -> {
+            if (items.isEmpty()) {
+                show(R.id.url_history_is_empty);
+                list.setVisibility(View.GONE);
+            } else {
+                hide(R.id.url_history_is_empty);
+                adapter.clear();
+                adapter.addAll(items);
+                list.setVisibility(View.VISIBLE);
+            }
+        });
+    }
+
 }

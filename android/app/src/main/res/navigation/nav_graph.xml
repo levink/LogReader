@@ -20,11 +20,11 @@
         tools:layout="@layout/fragment_mask" >
         <action
             android:id="@+id/action_maskFragment_to_resultFragment"
-            app:destination="@id/resultFragment" />
+            app:destination="@id/parseFragment" />
     </fragment>
     <fragment
-        android:id="@+id/resultFragment"
-        android:name="com.logger.fragment.ResultFragment"
+        android:id="@+id/parseFragment"
+        android:name="com.logger.fragment.ParseFragment"
         android:label="fragment_result"
         tools:layout="@layout/fragment_result" />
 </navigation>
