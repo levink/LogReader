@@ -14,6 +14,8 @@ public class DownloadTask implements Runnable {
         void onComplete();
         void onCancel();
         void onFail();
+        void link(DownloadTask task);
+        void cancel();
     }
 
     private final String url;

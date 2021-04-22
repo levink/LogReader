@@ -167,38 +167,17 @@ public class ParseFragment extends BaseFragment {
             adapter.notifyDataSetChanged();
         });
         View notFoundText = view.findViewById(R.id.notFoundTextView);
-        viewModel.getMatchesQueue().observe(getViewLifecycleOwner(), list -> {
-            List<Match> newMatches = moveToMatches(list);
-            if (newMatches.isEmpty()) {
+        viewModel.getMatchesQueue().observe(getViewLifecycleOwner(), queue -> {
+            if (queue.isEmpty()) {
                 return;
             }
-            adapter.addAll(newMatches);
+            adapter.drainFrom(queue);
             adapter.notifyDataSetChanged();
             notFoundText.setVisibility(adapter.isEmpty() ? View.VISIBLE : View.GONE);
         });
         viewModel.getSelectAll().observe(getViewLifecycleOwner(), checked -> {
             adapter.markAll(checked);
         });
-    }
-
-    private List<Match> toMatches(LinkedBlockingQueue<String> queue) {
-        List<String> items = new ArrayList<>();
-        queue.drainTo(items);
-
-        List<Match> result = new ArrayList<>();
-        for (String item : items) {
-            result.add(new Match(item, false));
-        }
-
-        return result;
-    }
-    private List<Match> moveToMatches(LinkedList<String> list) {
-        List<Match> result = new ArrayList<>();
-        for (String item : list) {
-            result.add(new Match(item, false));
-        }
-        list.clear();
-        return result;
     }
 
     @Override
@@ -234,9 +213,8 @@ public class ParseFragment extends BaseFragment {
             return items.size();
         }
 
-        @Override
-        public void addAll(@NonNull Collection<? extends Match> collection) {
-            items.addAll(collection);
+        public void drainFrom(LinkedBlockingQueue<Match> queue) {
+            queue.drainTo(items);
         }
 
         @Override

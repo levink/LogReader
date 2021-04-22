@@ -2,8 +2,7 @@ package com.logger;
 
 import android.app.Application;
 
-import com.logger.classes.Repo;
-import com.logger.classes.logs.LogWriter;
+import com.logger.classes.DownloadTask;
 import com.logger.db.DBHelper;
 
 import java.util.concurrent.ExecutorService;
@@ -17,17 +16,15 @@ public class App extends Application {
     }
 
     private DBHelper db;
-    private Repo repo;
     private ExecutorService dbPool;
-    private ExecutorService repoPool;
+    private ExecutorService networkPool;
     @Override
     public void onCreate() {
         super.onCreate();
         instance = this;
         dbPool = Executors.newSingleThreadExecutor();
-        repoPool = Executors.newSingleThreadExecutor();
+        networkPool = Executors.newSingleThreadExecutor();
         db = new DBHelper(instance);
-        repo = new Repo(repoPool);
     }
 
     private static App instance;
@@ -39,7 +36,10 @@ public class App extends Application {
             runnable.run(instance.db);
         });
     }
-    public static Repo getRepo() {
-        return instance.repo;
+    public static void download(String url, DownloadTask.Callback callback) {
+        DownloadTask task = new DownloadTask(url, callback);
+        callback.link(task);
+        instance.networkPool.execute(task);
     }
+
 }
