@@ -1,5 +1,9 @@
 package com.logger;
 
+import android.os.Handler;
+import android.os.Looper;
+import android.util.Log;
+
 import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
@@ -7,9 +11,16 @@ import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelStoreOwner;
 
+import com.logger.classes.DownloadTask;
+import com.logger.classes.Repo;
+import com.logger.classes.logs.LogReader;
+import com.logger.classes.logs.LogWriter;
 import com.logger.model.Match;
 
+import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.LinkedBlockingQueue;
 
 public class AppViewModel extends ViewModel {
 
@@ -22,9 +33,10 @@ public class AppViewModel extends ViewModel {
     private MutableLiveData<String> mask;
     private MutableLiveData<List<String>> urlHistory;
     private MutableLiveData<List<String>> maskHistory;
-    private MutableLiveData<List<Match>> matches;
+    private MutableLiveData<LinkedList<String>> matches;
     private MutableLiveData<Integer> progress;
     private MutableLiveData<Boolean> selectAll;
+    private ParseListener downloadListener;
 
     public LiveData<String> getUrl() {
         if (url == null){
@@ -58,9 +70,9 @@ public class AppViewModel extends ViewModel {
         }
         return maskHistory;
     }
-    public LiveData<List<Match>> getMatches() {
+    public LiveData<LinkedList<String>> getMatchesQueue() {
         if (matches == null) {
-            matches = new MutableLiveData<>();
+            matches = new MutableLiveData<>(new LinkedList<>());
         }
         return matches;
     }
@@ -78,7 +90,7 @@ public class AppViewModel extends ViewModel {
     }
 
     public void setUrl(String value) {
-        url.setValue(value);
+         url.setValue(value);
     }
     public void setMask(String value) {
         mask.setValue(value);
@@ -108,52 +120,161 @@ public class AppViewModel extends ViewModel {
             maskHistory.postValue(db.getMaskHistory());
         });
 
+        if (downloadListener != null) {
+            downloadListener.cancel();
+        }
 
-//        if (task == null || task.isComplete()) {
-//            task = DownloadTask.getOrCreate(model.url, model.mask);
-//            task.execute();
-//        }
-//
-//        task.addListener(new DownloadTask.Listener() {
+        Handler mainHandler = new Handler(Looper.getMainLooper());
+        LogWriter writer = new LogWriter(App.getInstance());
+        LogReader reader = new LogReader();
+        downloadListener = new ParseListener(mask, writer, reader, new ParseListener.Callback() {
+            @Override
+            public void onProgress(int progressValue) {
+                progress.postValue(progressValue);
+            }
+
+            @Override
+            public void onMatch(LinkedBlockingQueue<String> queue) {
+                mainHandler.post(() -> {
+                    LinkedList<String> list = matches.getValue();
+                    queue.drainTo(list);
+                    matches.setValue(list);
+                });
+            }
+
 //            @Override
-//            public void onMatch(List<String> items) {
-//                if (items.isEmpty()){
-//                    return;
-//                }
-//
-//                ArrayList<Match> result = new ArrayList<>(items.size());
-//                for(String item : items) {
-//                    result.add(new Match(item, false));
-//                }
-//
-//                requireActivity().runOnUiThread(() -> {
-//                    adapter.addAll(result);
-//                    adapter.notifyDataSetChanged();
+//            public void onMatch(String item) {
+//                mainHandler.post(() -> {
+//                    LinkedList<String> value = matches.getValue();
+//                    value.add(item);
+//                    matches.setValue(value);
 //                });
 //            }
-//            @Override
-//            public void onProgress(int progress) {
-//                requireActivity().runOnUiThread(() -> {
-//                    progressBar.setProgress(progress);
-//                });
-//            }
-//            @Override
-//            public void onComplete() {
-//            }
-//            @Override
-//            public void onCancel() { }
-//            @Override
-//            public void onFail() { }
-//        });
+        });
+
+        Repo repo = App.getRepo();
+        repo.startDownload(url, downloadListener);
     }
 
-    public void resumeSearch() {
-
-    }
     public void pauseSearch() {
-
+        if (downloadListener != null)
+            downloadListener.pause();
+    }
+    public void resumeSearch() {
+        if (downloadListener != null)
+            downloadListener.resume();
     }
     public void cancelSearch() {
+        if (downloadListener != null)
+            downloadListener.cancel();
+    }
 
+    public static class ParseListener implements DownloadTask.Callback {
+
+        public interface Callback {
+            void onProgress(int progress);
+            void onMatch(LinkedBlockingQueue<String> queue);
+            //void onMatch(String item);
+        }
+
+        private final String filter;
+        private final LogWriter writer;
+        private final LogReader reader;
+        private final Callback callback;
+        private final LinkedBlockingQueue<String> queue;
+        private long length;
+        private long total;
+        private boolean cancelled;
+        private volatile boolean paused;
+        private volatile long pauseTime = 0;
+        private DownloadTask task;
+
+        public ParseListener(String filter, LogWriter writer, LogReader reader, Callback callback) {
+            this.filter = filter;
+            this.writer = writer;
+            this.reader = reader;
+            this.callback = callback;
+            this.queue = new LinkedBlockingQueue<>();
+        }
+
+        @Override
+        public void onStart(long contentLength) {
+            Log.d("test123", "Parsing start");
+            writer.write("Parsing start");
+            reader.setFilter(filter);
+            reader.onMatch(item -> {
+                writer.write(item);
+                queue.offer(item);
+            });
+            length = contentLength;
+            total = 0;
+            paused = false;
+            cancelled = false;
+        }
+
+        @Override
+        public void onProgress(byte[] block, int size) {
+            total += size;
+
+            reader.addBlock(block, size);
+            callback.onMatch(queue);
+
+            int progress = (int)(length <= 0 ? -1 : (100 * total / length));
+            callback.onProgress(progress);
+
+            if (paused && !cancelled) {
+                long now = System.currentTimeMillis();
+                long delta = now - pauseTime;
+                if (delta > 1000) {
+                    cancelTask();
+                }
+            }
+        }
+
+        @Override
+        public void onComplete() {
+            reader.parseLast();
+            callback.onMatch(queue);
+            Log.d("test123", "Parsing complete");
+            writer.write("Parsing complete");
+            writer.close();
+        }
+
+        @Override
+        public void onCancel() {
+            writer.write("Parsing canceled");
+            writer.close();
+        }
+
+        @Override
+        public void onFail() {
+            writer.write("Parsing failed");
+            writer.close();
+        }
+
+        public void link(DownloadTask task) {
+            this.task = task;
+        }
+
+        public void pause() {
+            pauseTime = System.currentTimeMillis();
+            paused = true;
+        }
+
+        public void resume() {
+            paused = false;
+        }
+
+        public void cancel() {
+            cancelTask();
+        }
+
+        private void cancelTask() {
+            cancelled = true;
+            if (task != null) {
+                task.cancel();
+            }
+            task = null;
+        }
     }
 }

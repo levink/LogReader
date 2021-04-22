@@ -25,6 +25,12 @@ import com.logger.AppViewModel;
 import com.logger.R;
 import com.logger.model.Match;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.concurrent.LinkedBlockingQueue;
+
 public class ParseFragment extends BaseFragment {
 
     private static class Model {
@@ -161,14 +167,38 @@ public class ParseFragment extends BaseFragment {
             adapter.notifyDataSetChanged();
         });
         View notFoundText = view.findViewById(R.id.notFoundTextView);
-        viewModel.getMatches().observe(getViewLifecycleOwner(), items -> {
-            adapter.addAll(items);
-            notFoundText.setVisibility(adapter.isEmpty() ?
-                    View.VISIBLE : View.GONE);
+        viewModel.getMatchesQueue().observe(getViewLifecycleOwner(), list -> {
+            List<Match> newMatches = moveToMatches(list);
+            if (newMatches.isEmpty()) {
+                return;
+            }
+            adapter.addAll(newMatches);
+            adapter.notifyDataSetChanged();
+            notFoundText.setVisibility(adapter.isEmpty() ? View.VISIBLE : View.GONE);
         });
         viewModel.getSelectAll().observe(getViewLifecycleOwner(), checked -> {
             adapter.markAll(checked);
         });
+    }
+
+    private List<Match> toMatches(LinkedBlockingQueue<String> queue) {
+        List<String> items = new ArrayList<>();
+        queue.drainTo(items);
+
+        List<Match> result = new ArrayList<>();
+        for (String item : items) {
+            result.add(new Match(item, false));
+        }
+
+        return result;
+    }
+    private List<Match> moveToMatches(LinkedList<String> list) {
+        List<Match> result = new ArrayList<>();
+        for (String item : list) {
+            result.add(new Match(item, false));
+        }
+        list.clear();
+        return result;
     }
 
     @Override
@@ -186,10 +216,27 @@ public class ParseFragment extends BaseFragment {
     static class MatchAdapter extends ArrayAdapter<Match> {
 
         private final LayoutInflater inflater;
+        private final List<Match> items = new ArrayList<>();
 
         public MatchAdapter(@NonNull Context context) {
             super(context, 0);
             inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        }
+
+        @Nullable
+        @Override
+        public Match getItem(int position) {
+            return items.get(position);
+        }
+
+        @Override
+        public int getCount() {
+            return items.size();
+        }
+
+        @Override
+        public void addAll(@NonNull Collection<? extends Match> collection) {
+            items.addAll(collection);
         }
 
         @Override

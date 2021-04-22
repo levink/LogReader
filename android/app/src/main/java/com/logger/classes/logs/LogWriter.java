@@ -9,12 +9,12 @@ import java.io.IOException;
 
 public class LogWriter {
 
-    final static long DESIRED_LOG_FILE_LENGTH = 1024 * 1024 * 10;
+    private final static long DESIRED_LOG_FILE_LENGTH = 1024 * 1024 * 10;
+    private final static String FILE_NAME = "results";
 
     private final BufferedWriter writer;
-
-    public LogWriter(Context context, String fileName) {
-        File file = openOrCreate(context.getApplicationContext(), fileName);
+    public LogWriter(Context context) {
+        File file = openOrCreate(context.getApplicationContext(), FILE_NAME);
         writer = createWriter(file);
     }
 
@@ -39,7 +39,6 @@ public class LogWriter {
         }
         return null;
     }
-
     public void write(String message) {
         try {
             if (writer != null) {

@@ -10,7 +10,7 @@
 CLogReader* reader = nullptr;
 
 
-BOOL Java_com_logger_classes_LogReader_setFilter(JNIEnv *env, jobject, jstring filter_) {
+BOOL Java_com_logger_classes_logs_LogReader_setFilter(JNIEnv *env, jobject, jstring filter_) {
     delete reader;
     reader = new CLogReader();
 
@@ -20,7 +20,7 @@ BOOL Java_com_logger_classes_LogReader_setFilter(JNIEnv *env, jobject, jstring f
     return (jboolean)result;
 }
 
-BOOL Java_com_logger_classes_LogReader_addBlock(JNIEnv *env, jobject instance, jbyteArray jBlock, jint count) {
+BOOL Java_com_logger_classes_logs_LogReader_addBlock(JNIEnv *env, jobject instance, jbyteArray jBlock, jint count) {
     if (count <= 0) {
         return JNI_FALSE;
     }
@@ -37,7 +37,7 @@ BOOL Java_com_logger_classes_LogReader_addBlock(JNIEnv *env, jobject instance, j
 }
 
 
-VOID Java_com_logger_classes_LogReader_parseLast(JNIEnv *env, jobject instance) {
+VOID Java_com_logger_classes_logs_LogReader_parseLast(JNIEnv *env, jobject instance) {
     Master master(env, instance);
     reader->parse(true, [&master](const String& item) {
         master.saveItem(item.getValue());

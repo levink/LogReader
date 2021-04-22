@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
+//todo: no need this?
 public class AppService extends JobIntentService {
 
     public static final String URL_CHECK_BROADCAST = "app-service-url-check";

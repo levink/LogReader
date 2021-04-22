@@ -2,6 +2,7 @@ package com.logger;
 
 import android.app.Application;
 
+import com.logger.classes.Repo;
 import com.logger.classes.logs.LogWriter;
 import com.logger.db.DBHelper;
 
@@ -16,24 +17,29 @@ public class App extends Application {
     }
 
     private DBHelper db;
+    private Repo repo;
     private ExecutorService dbPool;
-    private LogWriter writer;
+    private ExecutorService repoPool;
     @Override
     public void onCreate() {
         super.onCreate();
         instance = this;
-        db = new DBHelper(instance);
         dbPool = Executors.newSingleThreadExecutor();
-        writer = new LogWriter(this, "results");
+        repoPool = Executors.newSingleThreadExecutor();
+        db = new DBHelper(instance);
+        repo = new Repo(repoPool);
     }
 
     private static App instance;
+    public static App getInstance() {
+        return instance;
+    }
     public static void dbWork(DBRunnable runnable) {
         instance.dbPool.execute(() -> {
             runnable.run(instance.db);
         });
     }
-    public static LogWriter getLogWriter() {
-        return instance.writer;
+    public static Repo getRepo() {
+        return instance.repo;
     }
 }

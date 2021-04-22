@@ -1,4 +1,4 @@
-package com.logger.db;
+package com.logger.classes;
 
 //todo: do i need this?
 public class RepoResult<T> {

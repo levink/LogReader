@@ -5,7 +5,7 @@ public class LogReader {
         System.loadLibrary("native-lib");
     }
 
-    private native boolean setFilter(String filter);
+    public native boolean setFilter(String filter);
     public native boolean addBlock(byte[] block, int count);
     public native void parseLast();
 
@@ -14,9 +14,8 @@ public class LogReader {
         void onMatch(String item);
     }
 
-    private final OnMatchCallback callback;
-    public LogReader(String filter, OnMatchCallback callback) {
-        setFilter(filter);
+    private OnMatchCallback callback;
+    public void onMatch(OnMatchCallback callback) {
         this.callback = callback;
     }
 
