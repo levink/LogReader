@@ -7,7 +7,7 @@ import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelStoreOwner;
 
-import com.logger.classes.Parser;
+import com.logger.classes.DownloadParser;
 import com.logger.classes.logs.LogReader;
 import com.logger.classes.logs.LogWriter;
 import com.logger.model.Match;
@@ -29,7 +29,7 @@ public class AppViewModel extends ViewModel {
     private MutableLiveData<LinkedBlockingQueue<Match>> matches;
     private MutableLiveData<Integer> progress;
     private MutableLiveData<Boolean> selectAll;
-    private Parser parser;
+    private DownloadParser parser;
 
     public LiveData<String> getUrl() {
         if (url == null){
@@ -77,7 +77,7 @@ public class AppViewModel extends ViewModel {
     }
     public LiveData<Boolean> getSelectAll() {
         if (selectAll == null) {
-            selectAll = new MutableLiveData<>(true);
+            selectAll = new MutableLiveData<>(false);
         }
         return selectAll;
     }
@@ -105,6 +105,7 @@ public class AppViewModel extends ViewModel {
 
         this.url.setValue(url);
         this.mask.setValue(mask);
+        this.progress.setValue(0);
 
         App.dbWork(db -> {
             db.saveUrl(url);
@@ -119,16 +120,16 @@ public class AppViewModel extends ViewModel {
 
         LogWriter writer = new LogWriter(App.getInstance());
         LogReader reader = new LogReader();
-        parser = new Parser(mask, reader, writer, new Parser.ParseCallback() {
+        parser = new DownloadParser(mask, reader, writer) {
             @Override
-            public void onProgress(int progressValue) {
+            protected void onProgress(int progressValue) {
                 progress.postValue(progressValue);
             }
             @Override
-            public void onMatch(LinkedBlockingQueue<Match> queue) {
+            protected void onMatch(LinkedBlockingQueue<Match> queue) {
                 matches.postValue(queue);
             }
-        });
+        };
 
         App.download(url, parser);
     }

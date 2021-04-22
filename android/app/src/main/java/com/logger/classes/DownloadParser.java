@@ -8,17 +8,11 @@ import com.logger.model.Match;
 
 import java.util.concurrent.LinkedBlockingQueue;
 
-public class Parser implements DownloadTask.Callback {
-
-    public interface ParseCallback {
-        void onProgress(int progress);
-        void onMatch(LinkedBlockingQueue<Match> queue);
-    }
+public abstract class DownloadParser implements DownloadTask.Callback {
 
     private final String filter;
     private final LogWriter writer;
     private final LogReader reader;
-    private final ParseCallback callback;
     private final LinkedBlockingQueue<Match> queue;
     private long length;
     private long total;
@@ -27,11 +21,10 @@ public class Parser implements DownloadTask.Callback {
     private volatile long pauseTime = 0;
     private DownloadTask task;
 
-    public Parser(String filter, LogReader reader, LogWriter writer, ParseCallback callback) {
+    public DownloadParser(String filter, LogReader reader, LogWriter writer) {
         this.filter = filter;
         this.writer = writer;
         this.reader = reader;
-        this.callback = callback;
         this.queue = new LinkedBlockingQueue<>();
     }
 
@@ -51,14 +44,12 @@ public class Parser implements DownloadTask.Callback {
     }
 
     @Override
-    public void onProgress(byte[] block, int size) {
+    public void onBlockDownload(byte[] block, int size) {
         total += size;
 
         reader.addBlock(block, size);
-        callback.onMatch(queue);
-
-        int progress = (int)(length <= 0 ? -1 : (100 * total / length));
-        callback.onProgress(progress);
+        checkMatches();
+        checkProgress();
 
         if (paused && !cancelled) {
             long now = System.currentTimeMillis();
@@ -68,26 +59,52 @@ public class Parser implements DownloadTask.Callback {
             }
         }
     }
+    private void checkMatches() {
+        if (queue.isEmpty() || cancelled) {
+            return;
+        }
+        onMatch(queue);
+    }
+    private void checkProgress() {
+        if (cancelled) {
+            return;
+        }
+        int progress = calcProgress(total, length);
+        onProgress(progress);
+    }
+    private int calcProgress(long downloadedSize, long fullSize) {
+        if (fullSize <= 0) return -1;
+        if (downloadedSize >= fullSize) return 100;
+        return (int)((100.f * downloadedSize) / fullSize);
+    }
+    protected abstract void onProgress(int progressValue);
+    protected abstract void onMatch(LinkedBlockingQueue<Match> queue);
 
     @Override
     public void onComplete() {
         reader.parseLast();
-        callback.onMatch(queue);
-        Log.d("test123", "Parsing complete");
+        checkProgress();
+        checkMatches();
         writer.write("Parsing complete");
         writer.close();
+
+        Log.d("test123", "Parsing complete");
     }
 
     @Override
     public void onCancel() {
         writer.write("Parsing canceled");
         writer.close();
+
+        Log.d("test123", "Parsing canceled");
     }
 
     @Override
     public void onFail() {
         writer.write("Parsing failed");
         writer.close();
+
+        Log.d("test123", "Parsing failed");
     }
 
     @Override
@@ -102,6 +119,7 @@ public class Parser implements DownloadTask.Callback {
             task.cancel();
         }
         task = null;
+        queue.clear();
     }
 
     public void pause() {

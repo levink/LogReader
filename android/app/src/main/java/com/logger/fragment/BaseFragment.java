@@ -10,20 +10,17 @@ import androidx.annotation.IdRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.StringRes;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
 
 import com.logger.R;
-import com.logger.db.DBHelper;
-import com.logger.fragment.IParent;
 
 public abstract class BaseFragment extends Fragment {
-    private IParent parent;
+    private IParentActivity parent;
 
     @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
-        parent = (IParent)requireActivity();
+        parent = (IParentActivity)requireActivity();
     }
 
     @Override

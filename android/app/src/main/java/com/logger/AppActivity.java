@@ -6,10 +6,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 
-import com.logger.db.DBHelper;
-import com.logger.fragment.IParent;
+import com.logger.fragment.IParentActivity;
 
-public class AppActivity extends AppCompatActivity implements IParent {
+public class AppActivity extends AppCompatActivity implements IParentActivity {
     private NavController navController;
 
     @Override

@@ -138,6 +138,8 @@ public class ParseFragment extends BaseFragment {
             } else {
                 navigateRoot();
             }
+        } else {
+            viewModel.resumeSearch();
         }
     }
     private void setToolbar(@NonNull View view) {
@@ -153,9 +155,9 @@ public class ParseFragment extends BaseFragment {
     private void setProgressBar(@NonNull View view) {
         progressBar = view.findViewById(R.id.progressBar);
         progressBar.setProgress(0);
-        viewModel.getProgress().observe(getViewLifecycleOwner(), progress -> {
-            progressBar.setProgress(progress);
-        });
+        viewModel.getProgress().observe(getViewLifecycleOwner(), progress ->
+            progressBar.setProgress(progress)
+        );
     }
     private void setListView(@NonNull View view) {
         adapter = new MatchAdapter(requireContext());
@@ -175,20 +177,14 @@ public class ParseFragment extends BaseFragment {
             adapter.notifyDataSetChanged();
             notFoundText.setVisibility(adapter.isEmpty() ? View.VISIBLE : View.GONE);
         });
-        viewModel.getSelectAll().observe(getViewLifecycleOwner(), checked -> {
-            adapter.markAll(checked);
-        });
+        viewModel.getSelectAll().observe(getViewLifecycleOwner(), checked ->
+            adapter.markAll(checked)
+        );
     }
 
     @Override
-    public void onResume() {
-        super.onResume();
-        viewModel.resumeSearch();
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
+    public void onDestroyView() {
+        super.onDestroyView();
         viewModel.pauseSearch();
     }
 

@@ -10,7 +10,7 @@ public class DownloadTask implements Runnable {
 
     public interface Callback {
         void onStart(long contentLength);
-        void onProgress(byte[] block, int size);
+        void onBlockDownload(byte[] block, int size);
         void onComplete();
         void onCancel();
         void onFail();
@@ -61,7 +61,7 @@ public class DownloadTask implements Runnable {
         int readCount = stream.read(data);
         while(readCount > -1) {
 
-            callback.onProgress(data, readCount);
+            callback.onBlockDownload(data, readCount);
             if (canceled) {
                 break;
             }
