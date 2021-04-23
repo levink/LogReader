@@ -3,3 +3,9 @@
 ################################################################################
 
 /.vs
+/win/LogReader/.vs/LogReader/v16
+/win/LogReader/LogReader/Debug
+/win/LogReader/LogReader/x64/Debug
+/win/LogReader/packages
+/win/LogReader/Tests/Debug
+/win/LogReader/Tests/x64/Debug
