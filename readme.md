@@ -30,7 +30,7 @@ Restrictions
 Example: regex "?asd*" find matches on "wasd123" string.
 
 #### Structure
-Project contains two parts: Java application for Android and C++ program for Windows. Android app asynchronously load resources and transfer data blocks through JNI to C++ engine for parsing. Win-part contains unit tests for C++ engine. Such split allows fast dev-test cycle for native part.
+Project contains two parts: Java application for Android and C++ program for Windows. Android application asynchronously loads resources and transfers data blocks through JNI to C++ engine for parsing. Win-part contains unit tests for C++ engine. Such split allows fast dev-test cycle for native part.
 
 #### Coding time
 I've spent around 40 hours for write it. No magic. Only this approach works: think-code-test-clean-think... =)
