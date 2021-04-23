@@ -58,8 +58,6 @@ protected:
 	static bool canNotContinueParse(char c);
 public:
 	static PatternItem* create(char c);
-	
-	virtual ~PatternItem() = default;
 	virtual bool match(const PatternChain * chain, const StringBuilderIterator & it) const = 0;
 };
 
