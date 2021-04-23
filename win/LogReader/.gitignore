@@ -1,0 +1,7 @@
+/.vs/*
+/packages
+/x64
+/LogReader/Debug
+/LogReader/x64
+/Tests/Debug
+/Tests/x64
