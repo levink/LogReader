@@ -15,9 +15,9 @@ BOOL Java_com_logger_classes_logs_LogReader_setFilter(JNIEnv *env, jobject, jstr
     reader = new CLogReader();
 
     const char *filter = env->GetStringUTFChars(filter_, nullptr);
-    bool result = reader->setFilter(filter);
+    bool ok = reader->setFilter(filter);
     env->ReleaseStringUTFChars(filter_, filter);
-    return (jboolean)result;
+    return (jboolean)ok;
 }
 
 BOOL Java_com_logger_classes_logs_LogReader_addBlock(JNIEnv *env, jobject instance, jbyteArray jBlock, jint count) {
@@ -27,7 +27,8 @@ BOOL Java_com_logger_classes_logs_LogReader_addBlock(JNIEnv *env, jobject instan
 
     Master master(env, instance);
     char* block = master.convert(jBlock);
-    bool added = reader->addSourceBlock(block, count);
+    auto size = static_cast<size_t>(count);
+    bool added = reader->addSourceBlock(block, size);
     reader->parse(false, [&master](const String& item) {
         master.saveItem(item.getValue());
     });

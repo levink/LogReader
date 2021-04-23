@@ -63,7 +63,6 @@ PatternChain* PatternChain::createChain(const char* correctMask, const size_t si
 }
 
 const size_t Pattern::MAX_PATTERN_LENGTH = 1024;
-Pattern Pattern::oneLine = Pattern("*\n");
 
 void Pattern::init(const char* mask) {
 	correctMask = createCorrectedMask(mask);
@@ -74,7 +73,7 @@ void Pattern::init(const char* mask) {
 		return;
 	}
 	
-	const auto size = util::strlen(correctMask);
+	const auto size = util::length(correctMask);
 	if (size > MAX_PATTERN_LENGTH) {
 		state = PatternState::TOO_BIG_PATTERN;
 		chain = nullptr;

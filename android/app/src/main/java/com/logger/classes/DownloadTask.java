@@ -9,13 +9,12 @@ import java.net.URL;
 public class DownloadTask implements Runnable {
 
     public interface Callback {
-        void onStart(long contentLength);
-        void onBlockDownload(byte[] block, int size);
+        void onStart(long contentLength) throws IllegalArgumentException;
+        void onBlockDownload(byte[] block, int size) throws IOException;
         void onComplete();
         void onCancel();
-        void onFail();
+        void onFail(String errorMessage);
         void link(DownloadTask task);
-        void cancel();
     }
 
     private final String url;
@@ -38,6 +37,10 @@ public class DownloadTask implements Runnable {
 
             int code = connection.getResponseCode();
             if (code != HttpURLConnection.HTTP_OK) {
+                String message = "Bad response. " +
+                        "Code=" + code + ". " +
+                        "Message=" + connection.getResponseMessage();
+                callback.onFail(message);
                 return;
             }
 
@@ -45,22 +48,21 @@ public class DownloadTask implements Runnable {
             try (InputStream stream = connection.getInputStream()) {
                 parse(stream, length);
             }
-        } catch (IOException ex) {
-            callback.onFail();
+        } catch (IOException | IllegalArgumentException ex) {
+            callback.onFail(ex.getMessage());
         }
         finally {
             if (connection != null)
                 connection.disconnect();
         }
     }
-    private void parse(InputStream stream, int length) throws IOException {
+    private void parse(InputStream stream, int length) throws IOException, IllegalArgumentException {
         final int BLOCK_SIZE = 8192;
         byte[] data = new byte[BLOCK_SIZE];
 
         callback.onStart(length);
         int readCount = stream.read(data);
         while(readCount > -1) {
-
             callback.onBlockDownload(data, readCount);
             if (canceled) {
                 break;

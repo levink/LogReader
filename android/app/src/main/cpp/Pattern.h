@@ -50,7 +50,6 @@ public:
 	static size_t getCorrectedMaskLength(const char* mask);
 	static char* createCorrectedMask(const char* mask);
 	static bool isMaskSymbol(char c);
-	static Pattern oneLine;
 };
 
 class PatternItem {

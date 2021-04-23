@@ -37,7 +37,7 @@ String::String(char* value, const size_t length) {
 }
 
 String::String(const char* value) {
-	length = util::strlen(value);
+	length = util::length(value);
 	this->value = util::createCopy(value, length);
 }
 
@@ -79,7 +79,7 @@ StringBuilder::StringBuilder(const char* str) {
 	first = nullptr;
 	last = nullptr;
 	ignoreOffset = 0;
-	const auto size = util::strlen(str);
+	const auto size = util::length(str);
 	append(str, size);
 }
 
@@ -88,7 +88,7 @@ StringBuilder::~StringBuilder() {
 }
 
 void StringBuilder::append(const char* block) {
-	const auto size = util::strlen(block);
+	const auto size = util::length(block);
 	append(block, size);
 }
 

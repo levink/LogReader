@@ -6,8 +6,6 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
-import androidx.annotation.NonNull;
-
 import org.apache.commons.io.IOUtils;
 
 import java.io.IOException;
@@ -15,13 +13,14 @@ import java.io.InputStream;
 import java.util.ArrayList;
 
 public class DBHelper extends SQLiteOpenHelper {
-    private final Context context;
     private static final String DB_NAME = "LogReaderDB";
+    private static final String SOURCE_FILE = "data/db.sql";
     private static class Table {
         final static String FILES = "Files";
         final static String MASK = "Mask";
     }
 
+    private final Context context;
     public DBHelper(Context context) {
         super(context, DB_NAME, null, 1 );
         this.context = context;
@@ -43,8 +42,8 @@ public class DBHelper extends SQLiteOpenHelper {
     }
 
     private void createTables(SQLiteDatabase db) {
-        final String fileName = "data/db.sql";
-        String[] cmdList = load(fileName).split(";");
+
+        String[] cmdList = load().split(";");
         String emptyCmdReg = "^(\\s|\\n|\\r)*\\z";
         for (String cmd : cmdList) {
             if (!cmd.matches(emptyCmdReg))
@@ -52,11 +51,11 @@ public class DBHelper extends SQLiteOpenHelper {
         }
     }
 
-    private String load(String fileName) {
+    private String load() {
         String result = null;
         InputStream is;
         try {
-            is = context.getAssets().open(fileName);
+            is = context.getAssets().open(SOURCE_FILE);
             result = IOUtils.toString(is);
             is.close();
         } catch (IOException e) {
@@ -131,11 +130,6 @@ public class DBHelper extends SQLiteOpenHelper {
 
     public void clearMaskHistory(){
         SQLiteDatabase db = getWritableDatabase();
-        try {
-            db.delete("Mask", null, null);
-        } finally {
-            db.close();
-        }
-
+        db.delete("Mask", null, null);
     }
 }

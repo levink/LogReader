@@ -14,20 +14,20 @@ public class LogWriter {
 
     private final BufferedWriter writer;
     public LogWriter(Context context) {
-        File file = openOrCreate(context.getApplicationContext(), FILE_NAME);
+        File file = openOrCreate(context.getApplicationContext());
         writer = createWriter(file);
     }
 
-    private File openOrCreate(Context context, String fileName) {
+    private File openOrCreate(Context context) {
         File dir = context.getFilesDir();
-        File file = new File(dir, fileName);
+        File file = new File(dir, FILE_NAME);
 
         boolean exists = file.exists();
         boolean tooBig = file.length() > DESIRED_LOG_FILE_LENGTH;
         if (exists && tooBig) {
-            String otherName = fileName + System.currentTimeMillis();
+            String otherName = LogWriter.FILE_NAME + System.currentTimeMillis();
             file.renameTo(new File(dir, otherName));
-            file = new File(dir, fileName);
+            file = new File(dir, LogWriter.FILE_NAME);
         }
         return file;
     }

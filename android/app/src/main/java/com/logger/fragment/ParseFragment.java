@@ -4,6 +4,7 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -26,14 +27,12 @@ import com.logger.R;
 import com.logger.model.Match;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
 
 public class ParseFragment extends BaseFragment {
 
-    private static class Model {
+    private static class ParseModel {
         String url;
         String mask;
         boolean isCorrect() {
@@ -51,8 +50,8 @@ public class ParseFragment extends BaseFragment {
         bundle.putString("mask", mask);
         source.navigate(R.id.parseFragment, bundle);
     }
-    private static Model getModel(Bundle bundle) {
-        Model model = new Model();
+    private static ParseModel getModel(Bundle bundle) {
+        ParseModel model = new ParseModel();
         if (bundle == null) {
             return model;
         }
@@ -132,7 +131,7 @@ public class ParseFragment extends BaseFragment {
         setListView(view);
 
         if (savedInstanceState == null) {
-            Model model = getModel(getArguments());
+            ParseModel model = getModel(getArguments());
             if (model.isCorrect()) {
                 viewModel.startSearch(model.url, model.mask);
             } else {
@@ -154,10 +153,14 @@ public class ParseFragment extends BaseFragment {
     }
     private void setProgressBar(@NonNull View view) {
         progressBar = view.findViewById(R.id.progressBar);
-        progressBar.setProgress(0);
-        viewModel.getProgress().observe(getViewLifecycleOwner(), progress ->
-            progressBar.setProgress(progress)
-        );
+        viewModel.getProgress().observe(getViewLifecycleOwner(), progress -> {
+            if (progress <= 0) {
+                progressBar.setIndeterminate(true);
+            } else {
+                progressBar.setIndeterminate(false);
+                progressBar.setProgress(progress);
+            }
+        });
     }
     private void setListView(@NonNull View view) {
         adapter = new MatchAdapter(requireContext());

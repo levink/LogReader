@@ -20,7 +20,8 @@
             android:layout_height="wrap_content"
             app:searchIcon="@null"
             android:hint="@string/set_mask"
-            android:backgroundTint="@color/colorPrimary" />
+            android:backgroundTint="@color/colorPrimary"
+            android:inputType="number|text" />
 
     </androidx.appcompat.widget.Toolbar>
 

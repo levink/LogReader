@@ -1,11 +1,10 @@
 package com.logger.classes;
 
-import android.util.Log;
-
 import com.logger.classes.logs.LogReader;
 import com.logger.classes.logs.LogWriter;
 import com.logger.model.Match;
 
+import java.io.IOException;
 import java.util.concurrent.LinkedBlockingQueue;
 
 public abstract class DownloadParser implements DownloadTask.Callback {
@@ -29,10 +28,12 @@ public abstract class DownloadParser implements DownloadTask.Callback {
     }
 
     @Override
-    public void onStart(long contentLength) {
-        Log.d("test123", "Parsing start");
+    public void onStart(long contentLength) throws IllegalArgumentException{
         writer.write("Parsing start");
-        reader.setFilter(filter);
+        boolean ok = reader.setFilter(filter);
+        if (!ok) {
+            throw new IllegalArgumentException("Bad filter: " + filter);
+        }
         reader.onMatch(item -> {
             writer.write(item);
             queue.offer(new Match(item, false));
@@ -44,10 +45,13 @@ public abstract class DownloadParser implements DownloadTask.Callback {
     }
 
     @Override
-    public void onBlockDownload(byte[] block, int size) {
+    public void onBlockDownload(byte[] block, int size) throws IOException {
         total += size;
 
-        reader.addBlock(block, size);
+        boolean added = reader.addBlock(block, size);
+        if (!added) {
+            throw new IOException("Can not add new data block");
+        }
         checkMatches();
         checkProgress();
 
@@ -87,24 +91,18 @@ public abstract class DownloadParser implements DownloadTask.Callback {
         checkMatches();
         writer.write("Parsing complete");
         writer.close();
-
-        Log.d("test123", "Parsing complete");
     }
 
     @Override
     public void onCancel() {
         writer.write("Parsing canceled");
         writer.close();
-
-        Log.d("test123", "Parsing canceled");
     }
 
     @Override
-    public void onFail() {
-        writer.write("Parsing failed");
+    public void onFail(String errorMessage) {
+        writer.write("Parsing failed. " + errorMessage);
         writer.close();
-
-        Log.d("test123", "Parsing failed");
     }
 
     @Override
@@ -112,7 +110,6 @@ public abstract class DownloadParser implements DownloadTask.Callback {
         this.task = task;
     }
 
-    @Override
     public void cancel() {
         cancelled = true;
         if (task != null) {

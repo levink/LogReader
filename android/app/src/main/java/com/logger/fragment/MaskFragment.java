@@ -106,9 +106,10 @@ public class MaskFragment extends BaseFragment {
     private void setSearchView(@NonNull View view) {
         EditText editText = view.findViewById(R.id.editText);
         editText.setFilters(new InputFilter[] { new OneLineFilter() });
-        EditTextListener listener = new EditTextListener(newText -> {
-            viewModel.setMask(newText);
-        }, editText);
+        EditTextListener listener = new EditTextListener(
+                newText -> viewModel.setMask(newText),
+                editText
+        );
         getLifecycle().addObserver(listener);
         viewModel.getMask().observe(getViewLifecycleOwner(), mask -> {
             boolean different = !Objects.equals(mask, editText.getText().toString());

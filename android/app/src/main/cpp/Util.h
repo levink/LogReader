@@ -4,7 +4,7 @@ namespace util {
 	inline bool isLineEnding(const char c) {
 		return c == '\n' || c == '\r';
 	}
-	inline size_t strlen(const char* str) {
+	inline size_t length(const char* str) {
 		if (str == nullptr) {
 			return 0;
 		}

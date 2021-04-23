@@ -61,9 +61,10 @@ public class UrlFragment extends BaseFragment {
     }
     private void setSearchView(@NonNull View view) {
         SearchView searchView = view.findViewById(R.id.searchView);
-        SearchViewListener searchListener = new SearchViewListener(newText -> {
-            viewModel.setUrl(newText);
-        }, searchView);
+        SearchViewListener searchListener = new SearchViewListener(
+                newText -> viewModel.setUrl(newText),
+                searchView
+        );
         getLifecycle().addObserver(searchListener);
         viewModel.getUrl().observe(getViewLifecycleOwner(), url -> {
             String url_old = searchView.getQuery().toString();
