@@ -6,7 +6,7 @@ Program downloads ANSI-text file by URL address, parses it with regular expressi
 - Remember search history
 - Allow to select and copy to clipboard matched lines
 - Write internal log file with matches
-- Saves parse progress while screen rotating
+- Save parse progress while screen rotating
 
 Restrictions
 - Program must work with large files over 100mb
